@@ -79,7 +79,7 @@ void terminal_putchar_color(char c, uint8_t color) {
         ++terminal_column;
         if (terminal_column == VGA_WIDTH) {
             terminal_column = 0;
-            terminal_row++;
+            ++terminal_row;
             if (terminal_row == VGA_HEIGHT) {
                 terminal_row = 0;
             }
