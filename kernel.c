@@ -57,13 +57,22 @@ void terminal_putentryat(char c, uint8_t color, size_t x, size_t y) {
 	terminal_buffer[index] = vga_entry(c, color);
 }
 
+void terminal_scroll() {
+	for (size_t i = 1; i < VGA_HEIGHT; ++i) {
+		memcpy(&terminal_buffer[VGA_WIDTH * (i - 1)], &terminal_buffer[VGA_WIDTH * i], VGA_WIDTH * 2);
+	}
+
+	memset(&terminal_buffer[VGA_WIDTH * (VGA_HEIGHT - 1)], 0, VGA_WIDTH * 2);
+}
+
 void terminal_putchar_color(char c, uint8_t color) {
     switch (c) {
     case '\n':
         ++terminal_row;
         terminal_column = 0;
         if (terminal_row == VGA_HEIGHT) {
-            terminal_row = 0;
+            terminal_row = VGA_HEIGHT - 1;
+			terminal_scroll();
         }
         break;
 
@@ -74,7 +83,8 @@ void terminal_putchar_color(char c, uint8_t color) {
             terminal_column = 0;
             ++terminal_row;
             if (terminal_row == VGA_HEIGHT) {
-                terminal_row = 0;
+                terminal_row = VGA_HEIGHT - 1;
+				terminal_scroll();
             }
         }
     }
