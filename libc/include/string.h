@@ -8,5 +8,6 @@ void* memset(void* ptr, int value, size_t size);
 void* memchr(const void* ptr, int symbol, size_t size);
 
 size_t strlen(const char* str);
+char* strchr(const char* str, int symbol);
 
 #endif
