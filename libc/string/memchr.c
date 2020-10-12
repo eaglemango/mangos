@@ -3,7 +3,7 @@
 void* memchr(const void* ptr, int symbol, size_t size) {
     for (size_t i = 0; i < size; ++i) {
         if (((char*) ptr)[i] == (char) symbol) {
-            return ptr;
+            return ((char*) ptr) + i; 
         }
     }
 
