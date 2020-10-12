@@ -1,6 +1,6 @@
-AS=gcc -m32 -c -g -mgeneral-regs-only -mno-red-zone
-CC=gcc -m32 -g -mgeneral-regs-only -mno-red-zone
-LD=gcc -m32
+AS=i686-elf-gcc -m32 -c -g -mgeneral-regs-only -mno-red-zone
+CC=i686-elf-gcc -m32 -g -mgeneral-regs-only -mno-red-zone
+LD=i686-elf-gcc -m32
 
 build: kernel.bin
 
