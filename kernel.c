@@ -23,7 +23,7 @@ void kernel_main(void) {
 
     terminal_writestring_color("(c) eaglemango", vga_entry_color(VGA_COLOR_RED, VGA_COLOR_BLACK));
 
-    panic("mangOS is not ready yet!")
+    PANIC("mangOS is not ready yet!")
 
     printf("This message will never be printed because of panic!");
 }
