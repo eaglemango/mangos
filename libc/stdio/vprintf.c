@@ -36,10 +36,16 @@ int vprintf(const char* format_string, va_list arg_list) {
 				}
 
 				curr_ptr = next_modifier + 2;
+			} else if (next_modifier[1] == 's') {
+				char* string = va_arg(arg_list, char*);
+
+				terminal_writestring(string);
+
+				curr_ptr = next_modifier + 2;
 			} else if (next_modifier[1] == '%') {
 				terminal_putchar_color('%', vga_entry_color(VGA_COLOR_LIGHT_GREY, VGA_COLOR_BLACK));
 
-				curr_ptr = next_modifier + 2;
+				curr_ptr = next_modifier + 2;				
 			} else {
 				terminal_putchar_color('%', vga_entry_color(VGA_COLOR_LIGHT_GREY, VGA_COLOR_BLACK));
 
