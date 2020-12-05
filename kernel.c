@@ -4,6 +4,8 @@
 #include <stdint.h>
 
 #include "interrupts.h"
+#include "memory_map.h"
+#include "multiboot.h"
 #include "panic.h"
 #include "stdio.h"
 #include "tty.h"
@@ -14,7 +16,7 @@ __attribute__ ((interrupt)) void isr0(struct iframe* frame) {
     (void)frame;
 }
 
-void kernel_main(void) {
+void kernel_main(multiboot_info_t* multiboot_info, unsigned int magic) {
     init_idt();
 
 	terminal_initialize();
@@ -23,7 +25,10 @@ void kernel_main(void) {
 
     terminal_writestring_color("(c) eaglemango", vga_entry_color(VGA_COLOR_RED, VGA_COLOR_BLACK));
 
-    PANIC("mangOS is not ready yet!")
+    display_memory_size(multiboot_info);
+    display_memory_map(multiboot_info);
 
-    printf("This message will never be printed because of panic!");
+    // PANIC("mangOS is not ready yet!")
+
+    // printf("This message will never be printed because of panic!");
 }
