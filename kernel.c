@@ -3,6 +3,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "acpi.h"
 #include "interrupts.h"
 #include "panic.h"
 #include "stdio.h"
@@ -23,7 +24,10 @@ void kernel_main(void) {
 
     terminal_writestring_color("(c) eaglemango", vga_entry_color(VGA_COLOR_RED, VGA_COLOR_BLACK));
 
-    PANIC("mangOS is not ready yet!")
+    rsdp_descriptor_t* rsdp = get_rsdp_descriptor();
+    printf("\nACPI table is valid!\n");
 
-    printf("This message will never be printed because of panic!");
+    // PANIC("mangOS is not ready yet!")
+
+    // printf("This message will never be printed because of panic!");
 }
