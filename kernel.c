@@ -31,7 +31,16 @@ void kernel_main(void) {
     // madt_t* madt = get_madt(rsdp->rsdt_addr);
     //printf("MADT was found!");
 
-    program_pit();
+    hard_sleep(5);
+
+    printf("prepare for sleep for 10 secs\n");
+    hard_sleep(1);
+    printf("wake up!\n");
+
+    // program_pit();
+    // printf("pit programed");
+
+    // timer_phase(10000);
 
     // asm volatile ("int $0x20");
     // asm volatile ("int $0x20");

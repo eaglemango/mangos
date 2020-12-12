@@ -40,49 +40,31 @@ static inline uint8_t inb(uint16_t port) {
   asm volatile("in %0, %%al" : : "d" (port));
 }
 
-#define PIC1		0x20		/* IO base address for master PIC */
-#define PIC2		0xA0		/* IO base address for slave PIC */
-#define PIC1_COMMAND	PIC1
-#define PIC1_DATA	(PIC1+1)
-#define PIC2_COMMAND	PIC2
-#define PIC2_DATA	(PIC2+1)
+static uint64_t ticks = 0;
 
-void IRQ_set_mask(unsigned char IRQline) {
-    uint16_t port;
-    uint8_t value;
- 
-    if(IRQline < 8) {
-        port = PIC1_DATA;
-    } else {
-        port = PIC2_DATA;
-        IRQline -= 8;
-    }
-    value = inb(port) | (1 << IRQline);
-    outb(port, value);        
-}
- 
-void IRQ_clear_mask(unsigned char IRQline) {
-    uint16_t port;
-    uint8_t value;
- 
-    if(IRQline < 8) {
-        port = PIC1_DATA;
-    } else {
-        port = PIC2_DATA;
-        IRQline -= 8;
-    }
-    value = inb(port) & ~(1 << IRQline);
-    outb(port, value);        
-}
+static const uint64_t TICKS_PER_SECOND = 18;
 
 __attribute__ ((interrupt)) void irq0(struct iframe* frame) {
-    // PANIC("irq0 works")
+    /*
+    if (ticks % TICKS_PER_SECOND == 0) {
+        printf("%d sec passed\n", ticks / TICKS_PER_SECOND);
+    }
+    */
 
-    printf("kek");
+    ++ticks;
 
-    outb(0x20, 0x20); //EOI
+    // PIC EOI
+    outb(0x20, 0x20);
 
     (void)frame;
+}
+
+void hard_sleep(uint64_t seconds) {
+    uint64_t wake_up_time = ticks + seconds * TICKS_PER_SECOND;
+
+    while (ticks < wake_up_time) {
+        asm volatile ("hlt");
+    }
 }
 
 void init_idt() {
@@ -111,6 +93,4 @@ void init_idt() {
         : "r"(&IDTPTR)
         :
     );
-
-    // IRQ_clear_mask(32);
 }

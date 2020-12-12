@@ -10,3 +10,7 @@ struct iframe {
 };
 
 void init_idt();
+
+void timer_phase(int hz);
+
+void hard_sleep(uint64_t seconds);
