@@ -3,6 +3,7 @@
 
 #include "panic.h"
 #include "interrupts.h"
+#include "utils.h"
 
 struct idt_entry {
     uint16_t base_lo;
@@ -31,14 +32,6 @@ static void idt_register(uint8_t pos, uint32_t base, uint16_t sel, uint8_t flags
 }
 
 extern void isr0();
-
-static inline void outb(uint16_t port, uint8_t data) {
-  asm volatile("out %0,%1" : : "a" (data), "d" (port));
-}
-
-static inline uint8_t inb(uint16_t port) {
-  asm volatile("in %0, %%al" : : "d" (port));
-}
 
 static uint64_t ticks = 0;
 
