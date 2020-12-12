@@ -35,25 +35,39 @@ extern void isr0();
 
 static uint64_t ticks = 0;
 
-static const uint64_t TICKS_PER_SECOND = 18;
+static uint64_t timer_type = PIT_TIMER;
+
+static const uint64_t DEFAULT_PIT_TPS = 18;
+static uint64_t ticks_per_second = DEFAULT_PIT_TPS;
+
+void change_timer_type(uint64_t new_type) {
+    timer_type = new_type;
+}
+
+void change_tps(uint64_t new_tps) {
+    ticks_per_second = new_tps;
+}
 
 __attribute__ ((interrupt)) void irq0(struct iframe* frame) {
-    /*
-    if (ticks % TICKS_PER_SECOND == 0) {
-        printf("%d sec passed\n", ticks / TICKS_PER_SECOND);
+    if (ticks % ticks_per_second == 0) {
+        printf("%d sec passed\n", ticks / ticks_per_second);
     }
-    */
 
     ++ticks;
 
-    // PIC EOI
-    outb(0x20, 0x20);
+    if (timer_type == 0) {
+        // PIC EOI
+        outb(0x20, 0x20);
+    } else if (timer_type == 1) {
+        // APIC EOI
+        apic_eoi();
+    }
 
     (void)frame;
 }
 
 void hard_sleep(uint64_t seconds) {
-    uint64_t wake_up_time = ticks + seconds * TICKS_PER_SECOND;
+    uint64_t wake_up_time = ticks + seconds * ticks_per_second;
 
     while (ticks < wake_up_time) {
         asm volatile ("hlt");
