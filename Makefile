@@ -7,11 +7,14 @@ build: kernel.bin
 boot.o: boot.s
 	$(AS) boot.s -o boot.o
 
+pit.o: pit.s
+	$(AS) pit.s -o pit.o
+
 kernel.o: kernel.c
 	$(CC) -c kernel.c -o kernel.o -std=gnu99 -ffreestanding -O2 -Wall -Wextra -I./libc/include -I./kernel/include
 
 interrupts.o: interrupts.c
-	$(CC) -c interrupts.c -o interrupts.o -std=gnu99 -ffreestanding -O2 -Wall -Wextra
+	$(CC) -c interrupts.c -o interrupts.o -std=gnu99 -ffreestanding -O2 -Wall -Wextra -I./kernel/include -I./libc/include
 
 vga_entry.o: ./kernel/vga/vga_entry.c
 	$(CC) -c ./kernel/vga/vga_entry.c -o vga_entry.o -std=gnu99 -ffreestanding -O2 -Wall -Wextra -I./kernel/include
@@ -61,8 +64,8 @@ validate_acpi.o: ./kernel/acpi/validate_acpi.c
 get_rsdp_descriptor.o: ./kernel/acpi/get_rsdp_descriptor.c
 	$(CC) -c ./kernel/acpi/get_rsdp_descriptor.c -o get_rsdp_descriptor.o -std=gnu99 -ffreestanding -O2 -Wall -Wextra -I./libc/include -I./kernel/include
 
-kernel.bin: kernel.o boot.o vga_entry.o vga_entry_color.o interrupts.o memcmp.o memchr.o memcpy.o memset.o strchr.o strcmp.o strlen.o printf.o vprintf.o tty.o panic_maker.o halt_but_dont_catch_fire.o get_rsdp_descriptor.o validate_acpi.o
-	$(LD) -T linker.ld -o kernel.bin -ffreestanding -O2 -nostdlib vga_entry.o vga_entry_color.o boot.o interrupts.o  memcmp.o memchr.o memcpy.o memset.o strchr.o strcmp.o strlen.o kernel.o printf.o vprintf.o tty.o panic_maker.o halt_but_dont_catch_fire.o get_rsdp_descriptor.o validate_acpi.o -lgcc
+kernel.bin: kernel.o boot.o vga_entry.o vga_entry_color.o interrupts.o memcmp.o memchr.o memcpy.o memset.o strchr.o strcmp.o strlen.o printf.o vprintf.o tty.o panic_maker.o halt_but_dont_catch_fire.o get_rsdp_descriptor.o validate_acpi.o pit.o
+	$(LD) -T linker.ld -o kernel.bin -ffreestanding -O2 -nostdlib vga_entry.o vga_entry_color.o boot.o interrupts.o  memcmp.o memchr.o memcpy.o memset.o strchr.o strcmp.o strlen.o kernel.o printf.o vprintf.o tty.o panic_maker.o halt_but_dont_catch_fire.o get_rsdp_descriptor.o validate_acpi.o pit.o -lgcc
 
 .PHONY: build
 

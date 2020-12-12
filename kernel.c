@@ -4,6 +4,7 @@
 #include <stdint.h>
 
 #include "acpi.h"
+// #include "apic.h"
 #include "interrupts.h"
 #include "panic.h"
 #include "stdio.h"
@@ -22,10 +23,18 @@ void kernel_main(void) {
     asm volatile ("sti");
     asm volatile ("int $0x80");
 
-    terminal_writestring_color("(c) eaglemango", vga_entry_color(VGA_COLOR_RED, VGA_COLOR_BLACK));
+    // terminal_writestring_color("(c) eaglemango", vga_entry_color(VGA_COLOR_RED, VGA_COLOR_BLACK));
 
-    rsdp_descriptor_t* rsdp = get_rsdp_descriptor();
-    printf("\nACPI table is valid!\n");
+    // rsdp_descriptor_t* rsdp = get_rsdp_descriptor();
+    //printf("\nACPI table is valid!\n");
+
+    // madt_t* madt = get_madt(rsdp->rsdt_addr);
+    //printf("MADT was found!");
+
+    program_pit();
+
+    // asm volatile ("int $0x20");
+    // asm volatile ("int $0x20");
 
     // PANIC("mangOS is not ready yet!")
 
