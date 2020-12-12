@@ -2,6 +2,8 @@
 #define APIC_H
 
 #include "acpi.h"
+#include "utils.h"
+#include "interrupts.h"
 
 struct madt_entry {
     uint8_t entry_type;
@@ -30,23 +32,7 @@ typedef struct madt madt_t;
 // MADT signature
 static const char MADT_MAGIC[] = "APIC";
 
-madt_t* get_madt(rsdt_t* rsdt) {
-    int entries_count = (rsdt->header.length - sizeof(rsdt->header)) / 4;
-
-    printf("RSDT entries count: %d\n", entries_count);
-
-    for (int i = 0; i < entries_count; ++i) {
-        acpi_sdt_header_t* curr_header = (acpi_sdt_header_t*) rsdt->pointer_to_other_sdt[i];
-
-        if (!memcmp(curr_header->signature, MADT_MAGIC, strlen(MADT_MAGIC))) {
-            return (madt_t*) curr_header;
-        }
-    }
-
-    PANIC("MADT wasn't found")
-
-    return NULL;
-}
+madt_t* get_madt(rsdt_t* rsdt);
 
 struct ioapic {
     uint32_t reg;
@@ -55,42 +41,44 @@ struct ioapic {
 };
 typedef struct ioapic ioapic_t;
 
-void init_apic(rsdt_t* rsdt) {
-    madt_t* madt = get_madt(rsdt);
+#define APIC_ID          0x20
+#define APIC_VER         0x30
+#define APIC_TASKPRIOR   0x80
+#define APIC_EOI         0x0B0
+#define APIC_LDR         0x0D0
+#define APIC_DFR         0x0E0
+#define APIC_SPURIOUS    0x0F0
+#define APIC_ESR         0x280
+#define APIC_ICRL        0x300
+#define APIC_ICRH        0x310
+#define APIC_LVT_TMR     0x320
+#define APIC_LVT_PERF    0x340
+#define APIC_LVT_LINT0   0x350
+#define APIC_LVT_LINT1   0x360
+#define APIC_LVT_ERR     0x370
+#define APIC_TMRINITCNT  0x380
+#define APIC_TMRCURRCNT  0x390
+#define APIC_TMRDIV      0x3E0
+#define APIC_LAST        0x38F
+#define APIC_DISABLE     0x10000
+#define APIC_SW_ENABLE   0x100
+#define APIC_CPUFOCUS    0x200
+#define APIC_NMI         (4<<8)
+#define APIC_INIT        0x500
+#define APIC_BCAST       0x80000
+#define APIC_LEVEL       0x8000
+#define APIC_DELIVS      0x1000
+#define TMR_PERIODIC     0x20000
+#define TMR_BASEDIV      (1<<20)
 
-    uint32_t* lapic_ptr = (uint32_t*) madt->lapic_addr;
-    ioapic_t* ioapic_ptr = NULL;
+static void lapic_write(uint32_t* lapic_ptr, size_t idx, uint32_t value);
 
-    madt_entry_t* madt_entry = &madt->first_entry;
-    while (madt_entry) {
-        switch (madt_entry->entry_type) {
-            case PROCESSOR_LOCAL_APIC:
-                break;
-            case IO_APIC:
-                ioapic_ptr = (ioapic_t*)(*(uint32_t*)(&madt_entry->data[2]));
-                break;
-            case INTERRUPT_SOURCE_OVERRIDE:
-                break;
-            case NON_MASKABLE_INTERRUPTS:
-                break;
-            case LOCAL_APIC_ADDRESS_OVERRIDE:
-                break;
-            default:
-                break;
-        }
+static uint32_t lapic_read(uint32_t* lapic_ptr, size_t idx);
 
-        madt_entry = (madt_entry_t*) ((uint8_t*) madt_entry + madt_entry->record_length);
+uint32_t get_apic_timer_ticks(uint32_t* lapic_ptr);
 
-        if ((uint8_t*) madt_entry >= (uint8_t*) madt + madt->header.length) {
-            madt_entry = NULL;
-        }
-    }
+void init_apic(rsdt_t* rsdt);
 
-    /*
-    // Disable old PIC.
-    outb(0x20 + 1, 0xFF);
-    outb(0xA0 + 1, 0xFF);
-    */
-}
+void apic_eoi();
 
 #endif
