@@ -81,4 +81,10 @@ void init_apic(rsdt_t* rsdt);
 
 void apic_eoi();
 
+#define IOAPIC_REG_TABLE  0x10
+
+static void ioapic_write(int reg, uint32_t data);
+
+static void ioapic_enable(int irq, int target_irq);
+
 #endif
