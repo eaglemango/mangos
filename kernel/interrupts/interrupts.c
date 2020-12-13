@@ -3,6 +3,8 @@
 
 #include "panic.h"
 #include "interrupts.h"
+#include "keyboard.h"
+#include "tty.h"
 #include "utils.h"
 
 struct idt_entry {
@@ -50,7 +52,7 @@ void change_tps(uint64_t new_tps) {
 
 __attribute__ ((interrupt)) void irq0(struct iframe* frame) {
     if (ticks % ticks_per_second == 0) {
-        printf("%d sec passed\n", ticks / ticks_per_second);
+        // printf("%d sec passed\n", ticks / ticks_per_second);
     }
 
     ++ticks;
@@ -66,6 +68,60 @@ __attribute__ ((interrupt)) void irq0(struct iframe* frame) {
     (void)frame;
 }
 
+// Great thanks to https://github.com/mit-pdos/xv6-public/blob/master/kbd.c
+__attribute__ ((interrupt)) void irq1(struct iframe* frame) {
+    static uint32_t shift;
+    static unsigned char *charcode[4] = {
+        normalmap, shiftmap, ctlmap, ctlmap
+    };
+    uint32_t st, data, c;
+
+    st = inb(KBSTATP);
+    if((st & KBS_DIB) == 0) {
+        apic_eoi();
+
+        return -1;
+    }
+
+    data = inb(KBDATAP);
+    if(data == 0xE0){
+        shift |= E0ESC;
+
+        apic_eoi();
+
+        return 0;
+    } else if(data & 0x80){
+        // Key released
+        data = (shift & E0ESC ? data : data & 0x7F);
+        shift &= ~(shiftcode[data] | E0ESC);
+
+        apic_eoi();
+
+        return 0;
+    } else if(shift & E0ESC){
+        // Last character was an E0 escape; or with 0x80
+        data |= 0x80;
+        shift &= ~E0ESC;
+    }
+
+    shift |= shiftcode[data];
+    shift ^= togglecode[data];
+    c = charcode[shift & (CTL | SHIFT)][data];
+    if(shift & CAPSLOCK){
+        if('a' <= c && c <= 'z') {
+            c += 'A' - 'a';
+        } else if('A' <= c && c <= 'Z') {
+            c += 'a' - 'A';
+        }
+    }
+
+    terminal_putchar_color(c, vga_entry_color(VGA_COLOR_LIGHT_GREY, VGA_COLOR_BLACK));
+    
+    apic_eoi();
+
+    (void)frame;
+}
+
 void hard_sleep(uint64_t seconds) {
     uint64_t wake_up_time = ticks + seconds * ticks_per_second;
 
@@ -73,6 +129,12 @@ void hard_sleep(uint64_t seconds) {
         asm volatile ("hlt");
     }
 }
+
+__attribute__ ((interrupt)) void spurious_irq(struct iframe* frame) {
+    (void)frame;
+    apic_eoi();
+}
+
 
 void init_idt() {
     IDTPTR.limit = sizeof(struct idt_entry) * 256 - 1;
@@ -92,6 +154,8 @@ void init_idt() {
 
     // For flags param see https://wiki.osdev.org/IDT#Structure_IA-32.
     idt_register(32, (uint32_t)irq0, 0x08, 0b10001110);
+    idt_register(39, (uint32_t)spurious_irq, 0x08, 0b10001110);
+    idt_register(40, (uint32_t)irq1, 0x08, 0b10001110);
     idt_register(0x80, (uint32_t)isr0, 0x08, 0b10001110);
 
     asm volatile (
