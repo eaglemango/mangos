@@ -1,8 +1,10 @@
+#include <stdarg.h>
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
 
 #include "interrupts.h"
+#include "panic.h"
 #include "stdio.h"
 #include "tty.h"
 #include "vga.h"
@@ -21,5 +23,7 @@ void kernel_main(void) {
 
     terminal_writestring_color("(c) eaglemango", vga_entry_color(VGA_COLOR_RED, VGA_COLOR_BLACK));
 
-    printf("\nhello!");
+    PANIC("mangOS is not ready yet!")
+
+    printf("This message will never be printed because of panic!");
 }

@@ -40,11 +40,20 @@ strlen.o: ./libc/string/strlen.c
 tty.o: ./kernel/tty/tty.c
 	$(CC) -c ./kernel/tty/tty.c -o tty.o -std=gnu99 -ffreestanding -O2 -Wall -Wextra -I./libc/include -I./kernel/include
 
+vprintf.o: ./libc/stdio/vprintf.c
+	$(CC) -c ./libc/stdio/vprintf.c -o vprintf.o -std=gnu99 -ffreestanding -O2 -Wall -Wextra -I./libc/include -I./kernel/include
+
 printf.o: ./libc/stdio/printf.c
 	$(CC) -c ./libc/stdio/printf.c -o printf.o -std=gnu99 -ffreestanding -O2 -Wall -Wextra -I./libc/include -I./kernel/include
 
-kernel.bin: kernel.o boot.o vga_entry.o vga_entry_color.o interrupts.o memchr.o memcpy.o memset.o strchr.o strcmp.o strlen.o printf.o tty.o
-	$(LD) -T linker.ld -o kernel.bin -ffreestanding -O2 -nostdlib vga_entry.o vga_entry_color.o boot.o interrupts.o  memchr.o memcpy.o memset.o strchr.o strcmp.o strlen.o kernel.o printf.o tty.o -lgcc
+panic_maker.o: ./kernel/panic/panic_maker.c
+	$(CC) -c ./kernel/panic/panic_maker.c -o panic_maker.o -std=gnu99 -ffreestanding -O2 -Wall -Wextra -I./libc/include -I./kernel/include
+
+halt_but_dont_catch_fire.o: ./kernel/panic/halt_but_dont_catch_fire.c
+	$(CC) -c ./kernel/panic/halt_but_dont_catch_fire.c -o halt_but_dont_catch_fire.o -std=gnu99 -ffreestanding -O2 -Wall -Wextra -I./libc/include -I./kernel/include
+
+kernel.bin: kernel.o boot.o vga_entry.o vga_entry_color.o interrupts.o memchr.o memcpy.o memset.o strchr.o strcmp.o strlen.o printf.o vprintf.o tty.o panic_maker.o halt_but_dont_catch_fire.o
+	$(LD) -T linker.ld -o kernel.bin -ffreestanding -O2 -nostdlib vga_entry.o vga_entry_color.o boot.o interrupts.o  memchr.o memcpy.o memset.o strchr.o strcmp.o strlen.o kernel.o printf.o vprintf.o tty.o panic_maker.o halt_but_dont_catch_fire.o -lgcc
 
 .PHONY: build
 
