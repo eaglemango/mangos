@@ -4,6 +4,7 @@
 #include <stdint.h>
 
 #include "acpi.h"
+#include "apic.h"
 #include "interrupts.h"
 #include "memory_map.h"
 #include "multiboot.h"
@@ -24,12 +25,12 @@ void kernel_main(multiboot_info_t* multiboot_info, unsigned int magic) {
     asm volatile ("sti");
     asm volatile ("int $0x80");
 
+    printf("Using PIT...\n");
+
     terminal_writestring_color("(c) eaglemango", vga_entry_color(VGA_COLOR_RED, VGA_COLOR_BLACK));
 
     rsdp_descriptor_t* rsdp = get_rsdp_descriptor();
-    printf("\nACPI table is valid!\n");
-
-    // PANIC("mangOS is not ready yet!")
-
-    // printf("This message will never be printed because of panic!");
+    madt_t* madt = get_madt(rsdp->rsdt_addr);
+    init_apic(rsdp->rsdt_addr);
+    printf("Using APIC timer...\n");
 }
