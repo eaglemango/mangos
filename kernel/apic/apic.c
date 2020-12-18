@@ -1,4 +1,5 @@
 #include "apic.h"
+#include "string.h"
 
 madt_t* get_madt(rsdt_t* rsdt) {
     int entries_count = (rsdt->header.length - sizeof(rsdt->header)) / 4;
