@@ -5,6 +5,7 @@
 
 #include <stddef.h>
 
+int memcmp(const void* mem_1, const void* mem_2, size_t size);
 void* memcpy(void* dest_ptr, const void* src_ptr, size_t size);
 void* memset(void* ptr, int value, size_t size);
 void* memchr(const void* ptr, int symbol, size_t size);

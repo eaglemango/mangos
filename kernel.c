@@ -3,6 +3,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "acpi.h"
 #include "interrupts.h"
 #include "memory_map.h"
 #include "multiboot.h"
@@ -25,8 +26,8 @@ void kernel_main(multiboot_info_t* multiboot_info, unsigned int magic) {
 
     terminal_writestring_color("(c) eaglemango", vga_entry_color(VGA_COLOR_RED, VGA_COLOR_BLACK));
 
-    display_memory_size(multiboot_info);
-    display_memory_map(multiboot_info);
+    rsdp_descriptor_t* rsdp = get_rsdp_descriptor();
+    printf("\nACPI table is valid!\n");
 
     // PANIC("mangOS is not ready yet!")
 
