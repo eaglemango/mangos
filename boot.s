@@ -22,6 +22,10 @@ stack_top:
 _start:
 	mov $stack_top, %esp
 
+	# Arguments for memory map using GRUB
+	push %eax
+	push %ebx
+
 	call kernel_main
 
 	cli
