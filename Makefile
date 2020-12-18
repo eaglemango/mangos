@@ -64,8 +64,20 @@ get_rsdp_descriptor.o: ./kernel/acpi/get_rsdp_descriptor.c
 apic.o: ./kernel/apic/apic.c
 	$(CC) -c ./kernel/apic/apic.c -o apic.o -std=gnu99 -ffreestanding -O2 -Wall -Wextra -I./kernel/include -I./libc/include
 
-kernel.bin: kernel.o boot.o vga_entry.o vga_entry_color.o interrupts.o memcmp.o memchr.o memcpy.o memset.o strchr.o strcmp.o strlen.o printf.o vprintf.o tty.o panic_maker.o halt_but_dont_catch_fire.o get_rsdp_descriptor.o validate_acpi.o apic.o
-	$(LD) -T linker.ld -o kernel.bin -ffreestanding -O2 -nostdlib vga_entry.o vga_entry_color.o boot.o interrupts.o  memcmp.o memchr.o memcpy.o memset.o strchr.o strcmp.o strlen.o kernel.o printf.o vprintf.o tty.o panic_maker.o halt_but_dont_catch_fire.o get_rsdp_descriptor.o validate_acpi.o apic.o -lgcc
+get_contiguous_memory_size.o: ./kernel/memory_map/get_contiguous_memory_size.c
+	$(CC) -c ./kernel/memory_map/get_contiguous_memory_size.c -o get_contiguous_memory_size.o -std=gnu99 -ffreestanding -O2 -Wall -Wextra -I./libc/include -I./kernel/include
+
+display_memory_size.o: ./kernel/memory_map/display_memory_size.c
+	$(CC) -c ./kernel/memory_map/display_memory_size.c -o display_memory_size.o -std=gnu99 -ffreestanding -O2 -Wall -Wextra -I./libc/include -I./kernel/include
+
+display_memory_map.o: ./kernel/memory_map/display_memory_map.c
+	$(CC) -c ./kernel/memory_map/display_memory_map.c -o display_memory_map.o -std=gnu99 -ffreestanding -O2 -Wall -Wextra -I./libc/include -I./kernel/include
+
+get_next_mmap_entry.o: ./kernel/memory_map/get_next_mmap_entry.c
+	$(CC) -c ./kernel/memory_map/get_next_mmap_entry.c -o get_next_mmap_entry.o -std=gnu99 -ffreestanding -O2 -Wall -Wextra -I./libc/include -I./kernel/include
+
+kernel.bin: kernel.o boot.o vga_entry.o vga_entry_color.o interrupts.o memchr.o memcpy.o memset.o strchr.o strcmp.o strlen.o printf.o vprintf.o tty.o panic_maker.o halt_but_dont_catch_fire.o get_contiguous_memory_size.o display_memory_size.o get_next_mmap_entry.o display_memory_map.o get_rsdp_descriptor.o validate_acpi.o apic.o
+	$(LD) -T linker.ld -o kernel.bin -ffreestanding -O2 -nostdlib vga_entry.o vga_entry_color.o boot.o interrupts.o  memchr.o memcpy.o memset.o strchr.o strcmp.o strlen.o kernel.o printf.o vprintf.o tty.o panic_maker.o halt_but_dont_catch_fire.o get_contiguous_memory_size.o display_memory_size.o get_next_mmap_entry.o display_memory_map.o get_rsdp_descriptor.o validate_acpi.o apic.o -lgcc
 
 .PHONY: build
 

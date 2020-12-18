@@ -6,6 +6,8 @@
 #include "acpi.h"
 #include "apic.h"
 #include "interrupts.h"
+#include "memory_map.h"
+#include "multiboot.h"
 #include "panic.h"
 #include "stdio.h"
 #include "tty.h"
@@ -16,7 +18,7 @@ __attribute__ ((interrupt)) void isr0(struct iframe* frame) {
     (void)frame;
 }
 
-void kernel_main(void) {
+void kernel_main(multiboot_info_t* multiboot_info, unsigned int magic) {
     init_idt();
 
 	terminal_initialize();
