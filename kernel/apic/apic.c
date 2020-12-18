@@ -45,19 +45,23 @@ uint32_t get_apic_timer_ticks(uint32_t* lapic_ptr) {
         return ticksIn1ms;
 }
 
+static uint32_t* lapic_ptr = NULL;
+volatile ioapic_t* ioapic_ptr = NULL;
+
 void init_apic(rsdt_t* rsdt) {
     madt_t* madt = get_madt(rsdt);
 
-    uint32_t* lapic_ptr = (uint32_t*) madt->lapic_addr;
-    ioapic_t* ioapic_ptr = NULL;
+    lapic_ptr = (uint32_t*) madt->lapic_addr;
 
     madt_entry_t* madt_entry = &madt->first_entry;
     while (madt_entry) {
         switch (madt_entry->entry_type) {
             case PROCESSOR_LOCAL_APIC:
+                printf("lapic found\n");
                 break;
             case IO_APIC:
-                ioapic_ptr = (ioapic_t*)(*(uint32_t*)(&madt_entry->data[2]));
+                ioapic_ptr = (volatile ioapic_t*)(*(uint32_t*)(&madt_entry->data[2]));
+                printf("ioapic found\n");
                 break;
             case INTERRUPT_SOURCE_OVERRIDE:
                 break;
@@ -98,12 +102,34 @@ void init_apic(rsdt_t* rsdt) {
     lapic_write(lapic_ptr, APIC_LVT_TMR, 32 | TMR_PERIODIC);
     lapic_write(lapic_ptr, APIC_TMRDIV, 0x3);
     lapic_write(lapic_ptr, APIC_TMRINITCNT, ticksIn1ms);
+
+    //ioapic_enable(ioapic_ptr, 14, 41);
+    //ioapic_enable(ioapic_ptr, 15, 42);
+
+
+    ioapic_ptr->reg = 0x10 + 2;
+    printf("%d\n", ioapic_ptr->data);
+    // Enable keyboard interrupts in APIC
+    ioapic_enable( 1, 40);
+
+    ioapic_ptr->reg = 0x10 + 2;
+    printf("%d\n", ioapic_ptr->data);
 }
 
 void apic_eoi() {
-    madt_t* madt = get_madt((rsdt_t *) get_rsdp_descriptor()->rsdt_addr);
+    // madt_t* madt = get_madt((rsdt_t *) get_rsdp_descriptor()->rsdt_addr);
 
-    uint32_t* lapic_ptr = (uint32_t*) madt->lapic_addr;
+    // uint32_t* lapic_ptr = (uint32_t*) madt->lapic_addr;
 
     lapic_write(lapic_ptr, APIC_EOI, 0);
+}
+
+static void ioapic_write(int reg, uint32_t data) {
+    ioapic_ptr->reg = reg;
+    ioapic_ptr->data = data;
+}
+
+static void ioapic_enable(int irq, int target_irq) {
+    ioapic_write(IOAPIC_REG_TABLE + 2 * irq, target_irq);
+    ioapic_write(IOAPIC_REG_TABLE + 2 * irq + 1, 0);
 }
